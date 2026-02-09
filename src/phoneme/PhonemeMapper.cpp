@@ -5,17 +5,100 @@
  This is NOT linguistically perfect.
  Purpose: working foundation.
 */
+
 PhonemeMapper::PhonemeMapper() {
-    phonemeMap["ra"] = "ர";
-    phonemeMap["ma"] = "ம";
+
+    /* ===============================
+       5–4 CHARACTER PHONEMES (rare)
+       =============================== */
+    phonemeMap["nggaa"] = "ங்கா";
+    phonemeMap["ththaa"] = "த்தா";
+
+    /* ===============================
+       3 CHARACTER PHONEMES
+       =============================== */
+    phonemeMap["ngaa"] = "ங்கா";
+    phonemeMap["nga"]  = "ங்க";
+    phonemeMap["nya"]  = "ஞ";
+    phonemeMap["sha"]  = "ஷ";
+    phonemeMap["kha"]  = "க";
+    phonemeMap["gha"]  = "க";
+    phonemeMap["cha"]  = "ச";
+    phonemeMap["jha"]  = "ஜ";
+    phonemeMap["tha"]  = "த";
+    phonemeMap["dha"]  = "த";
+    phonemeMap["pha"]  = "ப";
+    phonemeMap["bha"]  = "ப";
+
+    /* ===============================
+       2 CHARACTER PHONEMES
+       =============================== */
+    phonemeMap["aa"] = "ஆ";
+    phonemeMap["ii"] = "ஈ";
+    phonemeMap["uu"] = "ஊ";
+    phonemeMap["ee"] = "ஏ";
+    phonemeMap["ai"] = "ஐ";
+    phonemeMap["oo"] = "ஓ";
+    phonemeMap["au"] = "ஔ";
+
+    phonemeMap["ka"] = "க";
     phonemeMap["ga"] = "க";
-    phonemeMap["ch"] = "ச்";
-    phonemeMap["cha"] = "ச";
-    phonemeMap["ti"] = "தி";
+    phonemeMap["ca"] = "ச";
+    phonemeMap["sa"] = "ச";
+    phonemeMap["ta"] = "த";
+    phonemeMap["da"] = "த";
     phonemeMap["na"] = "ந";
+    phonemeMap["pa"] = "ப";
+    phonemeMap["ba"] = "ப";
+    phonemeMap["ma"] = "ம";
+    phonemeMap["ya"] = "ய";
+    phonemeMap["ra"] = "ர";
+    phonemeMap["la"] = "ல";
     phonemeMap["va"] = "வ";
-    phonemeMap["a"]  = "அ";
+    phonemeMap["ha"] = "ஹ";
+
+    phonemeMap["zh"] = "ழ";
+    phonemeMap["ll"] = "ள";
+    phonemeMap["rr"] = "ற";
+    phonemeMap["nn"] = "ண";
+
+    /* ===============================
+       1 CHARACTER PHONEMES (fallback)
+       =============================== */
+    phonemeMap["a"] = "அ";
+    phonemeMap["i"] = "இ";
+    phonemeMap["u"] = "உ";
+    phonemeMap["e"] = "எ";
+    phonemeMap["o"] = "ஒ";
+
+    phonemeMap["k"] = "க";
+    phonemeMap["c"] = "ச";
+    phonemeMap["t"] = "த";
+    phonemeMap["n"] = "ந";
+    phonemeMap["p"] = "ப";
+    phonemeMap["m"] = "ம";
+    phonemeMap["y"] = "ய";
+    phonemeMap["r"] = "ர";
+    phonemeMap["l"] = "ல";
+    phonemeMap["v"] = "வ";
+    phonemeMap["s"] = "ச";
+    phonemeMap["h"] = "ஹ";
 }
+
+
+// PhonemeMapper::PhonemeMapper() {
+//     // Example mappings (you can extend freely)
+//     phonemeMap["nga"] = "ங";
+//     phonemeMap["cha"] = "ச";
+//     phonemeMap["ra"]  = "ர";
+//     phonemeMap["ma"]  = "ம";
+//     phonemeMap["ga"]  = "க";
+//     phonemeMap["ti"]  = "தி";
+//     phonemeMap["na"]  = "ந";
+//     phonemeMap["va"]  = "வ";
+//     phonemeMap["a"]   = "அ";
+// }
+
 
 // /*
 //  Maps a Sanskrit word into Tamil-like phoneme string
@@ -34,32 +117,35 @@ PhonemeMapper::PhonemeMapper() {
 // }
 
 std::string PhonemeMapper::mapWord(const std::string& word) {
+
     std::string result;
 
     for (size_t i = 0; i < word.size();) {
 
-        // 1️⃣ Try TWO-character phoneme (ra, ma, cha, etc.)
-        if (i + 1 < word.size()) {
-            std::string two = word.substr(i, 2);
-            auto it2 = phonemeMap.find(two);
-            if (it2 != phonemeMap.end()) {
-                result += it2->second;
-                i += 2;
+        bool matched = false;
+
+        // Try phoneme lengths: 5 → 4 → 3 → 2 → 1
+        for (int len = 5; len >= 1; --len) {
+
+            // Ensure substring does not go out of bounds
+            if (i + len > word.size())
                 continue;
+
+            std::string chunk = word.substr(i, len);
+            auto it = phonemeMap.find(chunk);
+
+            if (it != phonemeMap.end()) {
+                result += it->second;
+                i += len;
+                matched = true;
+                break;  // stop once longest match is found
             }
         }
 
-        // 2️⃣ Try ONE-character phoneme (a, i, u)
-        std::string one = word.substr(i, 1);
-        auto it1 = phonemeMap.find(one);
-        if (it1 != phonemeMap.end()) {
-            result += it1->second;
+        // If nothing matched, skip safely
+        if (!matched) {
             i += 1;
-            continue;
         }
-
-        // 3️⃣ Unknown character → skip safely
-        i += 1;
     }
 
     return result.empty() ? "[UNMAPPED]" : result;
